@@ -1,4 +1,5 @@
-default: install
+default:
+    just --list
 
 generate:
     pnpm run generate
