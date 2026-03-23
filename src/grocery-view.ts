@@ -8,18 +8,14 @@ export class GroceryCheckView extends obsidian.BasesView {
   private containerEl: HTMLElement
 
   constructor(controller: obsidian.QueryController, containerEl: HTMLElement) {
-    console.log('[iridecentibis] constructor called')
     super(controller)
-    console.log('[iridecentibis] super() done')
     this.containerEl = containerEl
-    console.log('[iridecentibis] constructor done')
   }
 
   public onDataUpdated(): void {
     this.containerEl.empty()
 
     const entries = this.data.data
-    console.log('[iridecentibis] onDataUpdated, entries:', entries?.length)
 
     if (!entries || entries.length === 0) {
       this.containerEl.createEl('p', { text: 'No items found.' })
