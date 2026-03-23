@@ -26,10 +26,10 @@ export class GroceryCheckView extends obsidian.BasesView {
   private render(): void {
     this.containerEl.empty()
 
-    const groups = this.lastGroups
+    const groups = this.data.groupedData
     const totalEntries = groups.reduce((sum, g) => sum + g.entries.length, 0)
 
-    if (!entries || entries.length === 0) {
+    if (totalEntries === 0) {
       this.containerEl.createEl('p', { text: 'No items found.' })
       return
     }
@@ -37,16 +37,17 @@ export class GroceryCheckView extends obsidian.BasesView {
     this.renderSweepButton()
 
     const isGrouped = groups.length > 1 || groups[0]?.hasKey()
+
     const table = this.containerEl.createEl('table')
     const thead = table.createEl('thead')
     const headerRow = thead.createEl('tr')
     headerRow.createEl('th', { text: '' })
-    this.renderSortHeader(headerRow, 'Item', 'item')
+    headerRow.createEl('th', { text: 'Item' })
     if (!isGrouped) {
-      this.renderSortHeader(headerRow, 'Stores', 'stores')
+      headerRow.createEl('th', { text: 'Stores' })
     }
-
     const tbody = table.createEl('tbody')
+
     for (const group of groups) {
       if (isGrouped && group.hasKey()) {
         const groupRow = tbody.createEl('tr')
@@ -54,43 +55,10 @@ export class GroceryCheckView extends obsidian.BasesView {
         groupHeader.setAttribute('colspan', '2')
         groupHeader.createEl('strong', { text: group.key?.toString() ?? '' })
       }
-      const sorted = this.sortEntries(group.entries, isGrouped)
-      for (const entry of sorted) {
+      for (const entry of group.entries) {
         this.renderItem(tbody, entry, isGrouped)
       }
     }
-  }
-
-  private renderSortHeader(row: HTMLElement, label: string, column: SortColumn): void {
-    const th = row.createEl('th')
-    th.style.cursor = 'pointer'
-    const indicator = this.sortColumn === column
-      ? (this.sortDirection === 'asc' ? ' ↑' : ' ↓')
-      : ''
-    th.setText(label + indicator)
-    th.addEventListener('click', () => {
-      if (this.sortColumn === column) {
-        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc'
-      } else {
-        this.sortColumn = column
-        this.sortDirection = 'asc'
-      }
-      this.render()
-    })
-  }
-
-  private sortEntries(entries: obsidian.BasesEntry[], isGrouped: boolean): obsidian.BasesEntry[] {
-    const col = isGrouped ? 'item' : this.sortColumn
-    const dir = this.sortDirection === 'asc' ? 1 : -1
-    return [...entries].sort((a, b) => {
-      const aVal = col === 'stores'
-        ? (a.getValue('formula.Stores')?.toString() ?? '')
-        : a.file.basename
-      const bVal = col === 'stores'
-        ? (b.getValue('formula.Stores')?.toString() ?? '')
-        : b.file.basename
-      return aVal.localeCompare(bVal) * dir
-    })
   }
 
   private renderSweepButton(): void {
@@ -98,20 +66,7 @@ export class GroceryCheckView extends obsidian.BasesView {
     btn.addEventListener('click', () => void this.sweep())
   }
 
-  private renderItems(entries: obsidian.BasesEntry[]): void {
-    const table = this.containerEl.createEl('table')
-    const thead = table.createEl('thead')
-    const headerRow = thead.createEl('tr')
-    headerRow.createEl('th', { text: '' })
-    headerRow.createEl('th', { text: 'Item' })
-    headerRow.createEl('th', { text: 'Stores' })
-    const tbody = table.createEl('tbody')
-    for (const entry of entries) {
-      this.renderItem(tbody, entry)
-    }
-  }
-
-  private renderItem(tbody: HTMLElement, entry: obsidian.BasesEntry): void {
+  private renderItem(tbody: HTMLElement, entry: obsidian.BasesEntry, isGrouped: boolean): void {
     const tr = tbody.createEl('tr')
     const completed = entry.getValue('note.completed')?.isTruthy() ?? false
 
@@ -130,8 +85,10 @@ export class GroceryCheckView extends obsidian.BasesView {
       nameTd.addClass('grocery-item-completed')
     }
 
-    const storesValue = entry.getValue('formula.Stores')
-    tr.createEl('td', { text: storesValue ? storesValue.toString() : '' })
+    if (!isGrouped) {
+      const storesValue = entry.getValue('formula.Stores')
+      tr.createEl('td', { text: storesValue ? storesValue.toString() : '' })
+    }
   }
 
   private async sweep(): Promise<void> {
