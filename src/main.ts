@@ -6,9 +6,7 @@ export default class IridescentIbisPlugin extends obsidian.Plugin {
     this.registerBasesView(groceryView.VIEW_TYPE, {
       name: 'Grocery Check',
       icon: 'shopping-cart',
-      factory: (controller, containerEl) => {
-        new groceryView.GroceryCheckView(controller, containerEl)
-      },
+      factory: (controller, containerEl) => new groceryView.GroceryCheckView(controller, containerEl),
     })
   }
 }

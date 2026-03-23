@@ -7,7 +7,7 @@ export class GroceryCheckView extends obsidian.BasesView {
   readonly type = VIEW_TYPE
   private containerEl: HTMLElement
 
-  constructor(controller: obsidian.BasesViewConfig, containerEl: HTMLElement) {
+  constructor(controller: obsidian.QueryController, containerEl: HTMLElement) {
     super(controller)
     this.containerEl = containerEl
   }
