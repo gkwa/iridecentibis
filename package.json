@@ -1,29 +1,19 @@
 {
-	"name": "obsidian-sample-plugin",
-	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
-	"main": "main.js",
-	"type": "module",
-	"scripts": {
-		"dev": "node esbuild.config.mjs",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"version": "node version-bump.mjs && git add manifest.json versions.json",
-		"lint": "eslint ."
-	},
-	"keywords": [],
-	"license": "0-BSD",
-	"devDependencies": {
-		"@types/node": "^16.11.6",
-		"esbuild": "0.25.5",
-		"eslint-plugin-obsidianmd": "0.1.9",
-		"globals": "14.0.0",
-		"tslib": "2.4.0",
-		"typescript": "^5.8.3",
-		"typescript-eslint": "8.35.1",
-		"@eslint/js": "9.30.1",
-		"jiti": "2.6.1"
-	},
-	"dependencies": {
-		"obsidian": "latest"
-	}
+  "name": "iridecentibis",
+  "version": "0.1.0",
+  "description": "Obsidian plugin for grocery list management via Bases",
+  "main": "main.js",
+  "scripts": {
+    "generate": "tsx scripts/generate-stores.ts",
+    "build": "npm run generate && node esbuild.config.mjs production",
+    "dev": "npm run generate && node esbuild.config.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "builtin-modules": "^4.0.0",
+    "esbuild": "^0.24.0",
+    "obsidian": "latest",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
 }
