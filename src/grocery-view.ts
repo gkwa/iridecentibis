@@ -14,8 +14,17 @@ export class GroceryCheckView extends obsidian.BasesView {
 
   public onDataUpdated(): void {
     this.containerEl.empty()
+
+    const entries = this.data.data
+    console.log('[iridecentibis] onDataUpdated, entries:', entries?.length)
+
+    if (!entries || entries.length === 0) {
+      this.containerEl.createEl('p', { text: 'No items found.' })
+      return
+    }
+
     this.renderSweepButton()
-    this.renderItems()
+    this.renderItems(entries)
   }
 
   private renderSweepButton(): void {
@@ -23,12 +32,10 @@ export class GroceryCheckView extends obsidian.BasesView {
     btn.addEventListener('click', () => void this.sweep())
   }
 
-  private renderItems(): void {
+  private renderItems(entries: obsidian.BasesEntry[]): void {
     const list = this.containerEl.createEl('ul')
-    for (const group of this.data.groupedData) {
-      for (const entry of group.entries) {
-        this.renderItem(list, entry)
-      }
+    for (const entry of entries) {
+      this.renderItem(list, entry)
     }
   }
 
@@ -52,16 +59,14 @@ export class GroceryCheckView extends obsidian.BasesView {
   }
 
   private async sweep(): Promise<void> {
-    for (const group of this.data.groupedData) {
-      for (const entry of group.entries) {
-        if (entry.getValue('completed') !== true) continue
-        await this.app.fileManager.processFrontMatter(entry.file, (fm) => {
-          for (const key of stores.STORE_KEYS) {
-            fm[key] = false
-          }
-          fm['completed'] = false
-        })
-      }
+    for (const entry of this.data.data) {
+      if (entry.getValue('completed') !== true) continue
+      await this.app.fileManager.processFrontMatter(entry.file, (fm) => {
+        for (const key of stores.STORE_KEYS) {
+          fm[key] = false
+        }
+        fm['completed'] = false
+      })
     }
   }
 }
