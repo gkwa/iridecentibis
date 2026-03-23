@@ -151,7 +151,12 @@ export class GroceryCheckView extends obsidian.BasesView {
       })
     })
 
-    const nameTd = tr.createEl('td', { text: entry.file.basename })
+    const nameTd = tr.createEl('td')
+    const nameLink = nameTd.createEl('a', { text: entry.file.basename })
+    nameLink.style.cursor = 'pointer'
+    nameLink.addEventListener('click', () => {
+      void this.app.workspace.getLeaf().openFile(entry.file)
+    })
     if (completed) {
       nameTd.addClass('grocery-item-completed')
     }
