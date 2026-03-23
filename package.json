@@ -1,19 +1,22 @@
 {
-  "name": "iridecentibis",
-  "version": "0.1.0",
-  "description": "Obsidian plugin for grocery list management via Bases",
-  "main": "main.js",
-  "scripts": {
-    "generate": "tsx scripts/generate-stores.ts",
-    "build": "pnpm generate && node esbuild.config.mjs production",
-    "dev": "pnpm generate && node esbuild.config.mjs"
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "builtin-modules": "^4.0.0",
-    "esbuild": "^0.24.0",
-    "obsidian": "latest",
-    "tsx": "^4.0.0",
-    "typescript": "^5.0.0"
-  }
+	"name": "iridecentibis",
+	"version": "0.1.0",
+	"description": "Grocery list management via Obsidian Bases",
+	"main": "main.js",
+	"type": "module",
+	"scripts": {
+		"generate": "tsx scripts/generate-stores.ts",
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
+	},
+	"devDependencies": {
+		"@types/node": "^16.11.6",
+		"esbuild": "0.25.5",
+		"tslib": "2.4.0",
+		"tsx": "^4.0.0",
+		"typescript": "^5.8.3"
+	},
+	"dependencies": {
+		"obsidian": "latest"
+	}
 }

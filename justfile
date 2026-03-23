@@ -1,12 +1,12 @@
-default: build
+default: install
 
 generate:
     pnpm run generate
 
-build:
+build: generate
     pnpm run build
 
-dev:
+dev: generate
     pnpm run dev
 
 install: build

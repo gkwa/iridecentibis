@@ -8,8 +8,11 @@ export class GroceryCheckView extends obsidian.BasesView {
   private containerEl: HTMLElement
 
   constructor(controller: obsidian.QueryController, containerEl: HTMLElement) {
+    console.log('[iridecentibis] constructor called')
     super(controller)
+    console.log('[iridecentibis] super() done')
     this.containerEl = containerEl
+    console.log('[iridecentibis] constructor done')
   }
 
   public onDataUpdated(): void {
@@ -41,7 +44,7 @@ export class GroceryCheckView extends obsidian.BasesView {
 
   private renderItem(list: HTMLElement, entry: obsidian.BasesEntry): void {
     const li = list.createEl('li')
-    const completed = entry.getValue('completed') === true
+    const completed = entry.getValue('note.completed')?.isTruthy() ?? false
 
     const checkbox = li.createEl('input')
     checkbox.type = 'checkbox'
@@ -60,7 +63,7 @@ export class GroceryCheckView extends obsidian.BasesView {
 
   private async sweep(): Promise<void> {
     for (const entry of this.data.data) {
-      if (entry.getValue('completed') !== true) continue
+      if (!(entry.getValue('note.completed')?.isTruthy() ?? false)) continue
       await this.app.fileManager.processFrontMatter(entry.file, (fm) => {
         for (const key of stores.STORE_KEYS) {
           fm[key] = false
