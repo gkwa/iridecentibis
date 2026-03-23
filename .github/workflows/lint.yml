@@ -21,8 +21,8 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: ${{ matrix.node-version }}
-                  cache: "npm"
-            - run: npm ci
-            - run: npm run build --if-present
-            - run: npm run lint
-
+            - uses: pnpm/action-setup@v4
+              with:
+                  run_install: false
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm run build
