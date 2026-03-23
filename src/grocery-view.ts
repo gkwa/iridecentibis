@@ -55,6 +55,12 @@ export class GroceryCheckView extends obsidian.BasesView {
     if (completed) {
       label.addClass('grocery-item-completed')
     }
+
+    const storesValue = entry.getValue('formula.Stores')
+    if (storesValue) {
+      li.createSpan({ text: ' — ' })
+      li.createSpan({ text: storesValue.toString(), cls: 'grocery-item-stores' })
+    }
   }
 
   private async sweep(): Promise<void> {
