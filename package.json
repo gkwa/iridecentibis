@@ -4,6 +4,7 @@
 	"description": "Grocery list management via Obsidian Bases",
 	"main": "main.js",
 	"type": "module",
+	"packageManager": "pnpm@10.32.1",
 	"scripts": {
 		"generate": "tsx scripts/generate-stores.ts",
 		"dev": "node esbuild.config.mjs",
