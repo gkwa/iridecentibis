@@ -32,17 +32,24 @@ export class GroceryCheckView extends obsidian.BasesView {
   }
 
   private renderItems(entries: obsidian.BasesEntry[]): void {
-    const list = this.containerEl.createEl('ul')
+    const table = this.containerEl.createEl('table')
+    const thead = table.createEl('thead')
+    const headerRow = thead.createEl('tr')
+    headerRow.createEl('th', { text: '' })
+    headerRow.createEl('th', { text: 'Item' })
+    headerRow.createEl('th', { text: 'Stores' })
+    const tbody = table.createEl('tbody')
     for (const entry of entries) {
-      this.renderItem(list, entry)
+      this.renderItem(tbody, entry)
     }
   }
 
-  private renderItem(list: HTMLElement, entry: obsidian.BasesEntry): void {
-    const li = list.createEl('li')
+  private renderItem(tbody: HTMLElement, entry: obsidian.BasesEntry): void {
+    const tr = tbody.createEl('tr')
     const completed = entry.getValue('note.completed')?.isTruthy() ?? false
 
-    const checkbox = li.createEl('input')
+    const checkTd = tr.createEl('td')
+    const checkbox = checkTd.createEl('input')
     checkbox.type = 'checkbox'
     checkbox.checked = completed
     checkbox.addEventListener('change', () => {
@@ -51,16 +58,13 @@ export class GroceryCheckView extends obsidian.BasesView {
       })
     })
 
-    const label = li.createSpan({ text: entry.file.basename })
+    const nameTd = tr.createEl('td', { text: entry.file.basename })
     if (completed) {
-      label.addClass('grocery-item-completed')
+      nameTd.addClass('grocery-item-completed')
     }
 
     const storesValue = entry.getValue('formula.Stores')
-    if (storesValue) {
-      li.createSpan({ text: ' — ' })
-      li.createSpan({ text: storesValue.toString(), cls: 'grocery-item-stores' })
-    }
+    tr.createEl('td', { text: storesValue ? storesValue.toString() : '' })
   }
 
   private async sweep(): Promise<void> {
