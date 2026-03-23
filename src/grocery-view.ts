@@ -11,7 +11,8 @@ export class GroceryCheckView extends obsidian.BasesView {
   private containerEl: HTMLElement
   private sortColumn: SortColumn = 'stores'
   private sortDirection: SortDirection = 'asc'
-  private lastGroups: obsidian.BasesEntryGroup[] = []
+  private groupByStore = false
+  private lastEntries: obsidian.BasesEntry[] = []
 
   constructor(controller: obsidian.QueryController, containerEl: HTMLElement) {
     super(controller)
@@ -19,51 +20,120 @@ export class GroceryCheckView extends obsidian.BasesView {
   }
 
   public onDataUpdated(): void {
-    this.lastGroups = this.data.groupedData
+    this.lastEntries = this.data.data
     this.render()
   }
 
   private render(): void {
     this.containerEl.empty()
 
-    const groups = this.data.groupedData
-    const totalEntries = groups.reduce((sum, g) => sum + g.entries.length, 0)
-
-    if (totalEntries === 0) {
+    if (this.lastEntries.length === 0) {
       this.containerEl.createEl('p', { text: 'No items found.' })
       return
     }
 
-    this.renderSweepButton()
-
-    const isGrouped = groups.length > 1 || groups[0]?.hasKey()
+    this.renderToolbar()
 
     const table = this.containerEl.createEl('table')
     const thead = table.createEl('thead')
     const headerRow = thead.createEl('tr')
     headerRow.createEl('th', { text: '' })
-    headerRow.createEl('th', { text: 'Item' })
-    if (!isGrouped) {
-      headerRow.createEl('th', { text: 'Stores' })
+    this.renderSortHeader(headerRow, 'Item', 'item')
+    if (!this.groupByStore) {
+      this.renderSortHeader(headerRow, 'Stores', 'stores')
     }
     const tbody = table.createEl('tbody')
 
-    for (const group of groups) {
-      if (isGrouped && group.hasKey()) {
-        const groupRow = tbody.createEl('tr')
-        const groupHeader = groupRow.createEl('td')
-        groupHeader.setAttribute('colspan', '2')
-        groupHeader.createEl('strong', { text: group.key?.toString() ?? '' })
-      }
-      for (const entry of group.entries) {
-        this.renderItem(tbody, entry, isGrouped)
+    if (this.groupByStore) {
+      this.renderGrouped(tbody)
+    } else {
+      const sorted = this.sortEntries(this.lastEntries)
+      for (const entry of sorted) {
+        this.renderItem(tbody, entry, false)
       }
     }
   }
 
-  private renderSweepButton(): void {
-    const btn = this.containerEl.createEl('button', { text: 'Sweep completed' })
-    btn.addEventListener('click', () => void this.sweep())
+  private renderToolbar(): void {
+    const toolbar = this.containerEl.createDiv({ cls: 'grocery-toolbar' })
+
+    const sweepBtn = toolbar.createEl('button', { text: 'Sweep completed' })
+    sweepBtn.addEventListener('click', () => void this.sweep())
+
+    const groupBtn = toolbar.createEl('button', {
+      text: this.groupByStore ? 'Ungroup' : 'Group by store',
+    })
+    groupBtn.addEventListener('click', () => {
+      this.groupByStore = !this.groupByStore
+      this.render()
+    })
+  }
+
+  private renderGrouped(tbody: HTMLElement): void {
+    const grouped = new Map<string, obsidian.BasesEntry[]>()
+    for (const entry of this.lastEntries) {
+      let inAnyStore = false
+      for (const key of stores.STORE_KEYS) {
+        if (!(entry.getValue(`note.${key}`)?.isTruthy() ?? false)) continue
+        inAnyStore = true
+        const bucket = grouped.get(key) ?? []
+        bucket.push(entry)
+        grouped.set(key, bucket)
+      }
+      if (!inAnyStore) {
+        const bucket = grouped.get('(no store)') ?? []
+        bucket.push(entry)
+        grouped.set('(no store)', bucket)
+      }
+    }
+
+    const sortedKeys = [...grouped.keys()].sort()
+    for (const storeKey of sortedKeys) {
+      const label = storeKey === '(no store)'
+        ? '(no store)'
+        : stores.STORE_DISPLAY_NAMES[storeKey as stores.StoreKey] ?? storeKey
+      const groupRow = tbody.createEl('tr')
+      const groupHeader = groupRow.createEl('td')
+      groupHeader.setAttribute('colspan', '2')
+      groupHeader.createEl('strong', { text: label })
+
+      const entries = this.sortEntries(grouped.get(storeKey) ?? [])
+      for (const entry of entries) {
+        this.renderItem(tbody, entry, true)
+      }
+    }
+  }
+
+  private renderSortHeader(row: HTMLElement, label: string, column: SortColumn): void {
+    const th = row.createEl('th')
+    th.style.cursor = 'pointer'
+    const indicator = this.sortColumn === column
+      ? (this.sortDirection === 'asc' ? ' ↑' : ' ↓')
+      : ''
+    th.setText(label + indicator)
+    th.addEventListener('click', () => {
+      if (this.sortColumn === column) {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc'
+      } else {
+        this.sortColumn = column
+        this.sortDirection = 'asc'
+      }
+      this.render()
+    })
+  }
+
+  private sortEntries(entries: obsidian.BasesEntry[]): obsidian.BasesEntry[] {
+    const col = this.groupByStore ? 'item' : this.sortColumn
+    const dir = this.sortDirection === 'asc' ? 1 : -1
+    return [...entries].sort((a, b) => {
+      const aVal = col === 'stores'
+        ? (a.getValue('formula.Stores')?.toString() ?? '')
+        : a.file.basename
+      const bVal = col === 'stores'
+        ? (b.getValue('formula.Stores')?.toString() ?? '')
+        : b.file.basename
+      return aVal.localeCompare(bVal) * dir
+    })
   }
 
   private renderItem(tbody: HTMLElement, entry: obsidian.BasesEntry, isGrouped: boolean): void {

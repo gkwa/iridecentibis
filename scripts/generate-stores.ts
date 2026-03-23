@@ -22,7 +22,8 @@ function extractDisplayNames(proto: string): string[] {
   return names
 }
 
-function renderStoresTs(keys: string[]): string {
+function renderStoresTs(displayNames: string[], keys: string[]): string {
+  const displayNameEntries = keys.map((k, i) => `  "${k}": "${displayNames[i]}",`)
   const lines = [
     '// AUTO-GENERATED — do not edit',
     `// Source: ${BSR_MODULE}`,
@@ -32,6 +33,10 @@ function renderStoresTs(keys: string[]): string {
     '] as const',
     '',
     'export type StoreKey = typeof STORE_KEYS[number]',
+    '',
+    'export const STORE_DISPLAY_NAMES: Record<StoreKey, string> = {',
+    ...displayNameEntries,
+    '}',
     '',
   ]
   return lines.join('\n')
@@ -49,7 +54,7 @@ try {
   const keys = displayNames.map(toFrontmatterKey)
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true })
-  fs.writeFileSync(OUT_PATH, renderStoresTs(keys))
+  fs.writeFileSync(OUT_PATH, renderStoresTs(displayNames, keys))
 
   process.stderr.write(`Generated ${keys.length} store keys -> ${OUT_PATH}\n`)
 } finally {
