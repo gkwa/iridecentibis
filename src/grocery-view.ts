@@ -4,7 +4,7 @@ import * as stores from './generated/stores'
 export const VIEW_TYPE = 'grocery-check'
 
 export class GroceryCheckView extends obsidian.BasesView {
-  readonly type = VIEW_TYPE
+  get type(): string { return VIEW_TYPE }
   private containerEl: HTMLElement
 
   constructor(controller: obsidian.QueryController, containerEl: HTMLElement) {
