@@ -26,7 +26,7 @@ export class GroceryCheckView extends obsidian.BasesView {
   private renderItems(): void {
     const list = this.containerEl.createEl('ul')
     for (const group of this.data.groupedData) {
-      for (const entry of group.rows) {
+      for (const entry of group.entries) {
         this.renderItem(list, entry)
       }
     }
@@ -53,7 +53,7 @@ export class GroceryCheckView extends obsidian.BasesView {
 
   private async sweep(): Promise<void> {
     for (const group of this.data.groupedData) {
-      for (const entry of group.rows) {
+      for (const entry of group.entries) {
         if (entry.getValue('completed') !== true) continue
         await this.app.fileManager.processFrontMatter(entry.file, (fm) => {
           for (const key of stores.STORE_KEYS) {
