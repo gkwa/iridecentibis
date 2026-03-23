@@ -5,8 +5,8 @@
   "main": "main.js",
   "scripts": {
     "generate": "tsx scripts/generate-stores.ts",
-    "build": "npm run generate && node esbuild.config.mjs production",
-    "dev": "npm run generate && node esbuild.config.mjs"
+    "build": "pnpm generate && node esbuild.config.mjs production",
+    "dev": "pnpm generate && node esbuild.config.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

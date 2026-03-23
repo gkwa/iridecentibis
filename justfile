@@ -1,13 +1,13 @@
 default: build
 
 generate:
-    tsx scripts/generate-stores.ts
+    pnpm run generate
 
-build: generate
-    node esbuild.config.mjs production
+build:
+    pnpm run build
 
-dev: generate
-    node esbuild.config.mjs
+dev:
+    pnpm run dev
 
 install: build
     mkdir -p "/Users/mtm/Documents/Obsidian Vault/.obsidian/plugins/iridecentibis"
