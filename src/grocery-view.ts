@@ -6,18 +6,25 @@ export const VIEW_TYPE = 'grocery-check'
 type SortColumn = 'item' | 'stores'
 type SortDirection = 'asc' | 'desc'
 
-let groupByStore = false
-
 export class GroceryCheckView extends obsidian.BasesView {
   get type(): string { return VIEW_TYPE }
   private containerEl: HTMLElement
   private sortColumn: SortColumn = 'stores'
   private sortDirection: SortDirection = 'asc'
   private lastEntries: obsidian.BasesEntry[] = []
+  private groupByStore: boolean
+  private onGroupByStoreChange: (value: boolean) => Promise<void>
 
-  constructor(controller: obsidian.QueryController, containerEl: HTMLElement) {
+  constructor(
+    controller: obsidian.QueryController,
+    containerEl: HTMLElement,
+    groupByStore: boolean,
+    onGroupByStoreChange: (value: boolean) => Promise<void>,
+  ) {
     super(controller)
     this.containerEl = containerEl
+    this.groupByStore = groupByStore
+    this.onGroupByStoreChange = onGroupByStoreChange
   }
 
   public onDataUpdated(): void {
@@ -40,12 +47,12 @@ export class GroceryCheckView extends obsidian.BasesView {
     const headerRow = thead.createEl('tr')
     headerRow.createEl('th', { text: '' })
     this.renderSortHeader(headerRow, 'Item', 'item')
-    if (!groupByStore) {
+    if (!this.groupByStore) {
       this.renderSortHeader(headerRow, 'Stores', 'stores')
     }
     const tbody = table.createEl('tbody')
 
-    if (groupByStore) {
+    if (this.groupByStore) {
       this.renderGrouped(tbody)
     } else {
       const sorted = this.sortEntries(this.lastEntries)
@@ -62,10 +69,11 @@ export class GroceryCheckView extends obsidian.BasesView {
     sweepBtn.addEventListener('click', () => void this.sweep())
 
     const groupBtn = toolbar.createEl('button', {
-      text: groupByStore ? 'Ungroup' : 'Group by store',
+      text: this.groupByStore ? 'Ungroup' : 'Group by store',
     })
     groupBtn.addEventListener('click', () => {
-      groupByStore = !groupByStore
+      this.groupByStore = !this.groupByStore
+      void this.onGroupByStoreChange(this.groupByStore)
       this.render()
     })
   }
@@ -124,7 +132,7 @@ export class GroceryCheckView extends obsidian.BasesView {
   }
 
   private sortEntries(entries: obsidian.BasesEntry[]): obsidian.BasesEntry[] {
-    const col = groupByStore ? 'item' : this.sortColumn
+    const col = this.groupByStore ? 'item' : this.sortColumn
     const dir = this.sortDirection === 'asc' ? 1 : -1
     return [...entries].sort((a, b) => {
       const aVal = col === 'stores'
