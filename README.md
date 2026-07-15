@@ -88,3 +88,13 @@ If you have multiple URLs, you can also do:
 ## API Documentation
 
 See https://docs.obsidian.md
+
+## Changelog
+
+### 2026-07-15
+
+Persist group-by-store state across Obsidian restarts.
+
+The group-by-store toggle previously reset to off every time Obsidian was closed and reopened, because the state lived only in memory as a module-level variable.
+
+The plugin now saves the toggle state to `.obsidian/plugins/iridecentibis/data.json` via `plugin.saveData()` whenever it changes, and restores it on startup via `plugin.loadData()`.
